@@ -1,0 +1,8 @@
+# milky tags
+milky.tags
+
+# projects
+project/vs
+
+# debug program database
+*.pdb
