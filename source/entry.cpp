@@ -39,6 +39,7 @@ std::vector<directory_entry> directory_entry::load_from_directory(const std::fil
 directory_entry::directory_entry(const std::filesystem::path& path) : path{ path } {
 	name = tags::filename_without_tags(path.filename().u8string());
 	tags = no::split_string(tags::find_tag_string_in_path(path.filename().u8string()), ' ');
+	std::sort(tags.begin(), tags.end());
 }
 
 directory_entry::~directory_entry() {
@@ -98,6 +99,7 @@ bool directory_entry::is_rename_failing() const {
 void directory_entry::add_tag(const std::string& tag) {
 	if (!has_tag(tag)) {
 		tags.push_back(tag);
+		std::sort(tags.begin(), tags.end());
 		needs_rename = true;
 	}
 }
