@@ -15,6 +15,7 @@ public:
 	struct {
 		bool double_click_opens_directories{ true };
 		bool double_click_opens_files{ true };
+		bool show_pretty_name{ true };
 		no::vector4f entry_hover_color{ 1.0f, 1.0f, 1.0f, 0.19f };
 	} config;
 

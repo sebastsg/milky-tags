@@ -13,7 +13,7 @@ void file_browser::update() {
 	entry_full_size = entry_size + entry_margin;
 	const auto window_size = window.size().to<float>() - top_left_position;
 	new_cursor = no::platform::system_cursor::arrow;
-	no::ui::push_static_window("##file-view", top_left_position, window_size);
+	no::ui::push_static_window("##files", top_left_position, window_size);
 	ImGui::SameLine();
 	ImGui::BeginGroup();
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
@@ -224,11 +224,12 @@ void file_browser::directory_entry_control(directory_entry& entry) {
 	ImGui::SetCursorScreenPos(tag_cursor);
 	for (const auto& tag : entry.get_tags()) {
 		if (auto tag_data = tags::find_tag(tag)) {
-			const no::vector2f tag_image_size = ImGui::CalcTextSize(tag.c_str());
+			const auto tag_name = config.show_pretty_name ? tag_data->pretty_name : tag_data->name;
+			const no::vector2f tag_image_size = ImGui::CalcTextSize(tag_name.c_str());
 			no::vector2f tag_cursor_bg = ImGui::GetCursorScreenPos();
 			no::ui::rectangle(tag_cursor_bg - 2.0f, tag_image_size + 4.0f, tag_data->background_color);
 			no::ui::outline(tag_cursor_bg - 2.0f, tag_image_size + 4.0f, tag_data->text_color.with_w(0.25f));
-			no::ui::colored_text(tag_data->text_color, tag);
+			no::ui::colored_text(tag_data->text_color, tag_name);
 			if (tag_cursor_bg.x + tag_image_size.x * 2.0f < top_left_cursor.x + entry_size.x) {
 				no::ui::inline_next();
 			} else {

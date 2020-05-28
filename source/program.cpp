@@ -28,6 +28,7 @@ void main_state::update() {
 		}
 		ImGui::MenuItem("Double click to open directories", "", &browser->config.double_click_opens_directories);
 		ImGui::MenuItem("Double click to open files", "", &browser->config.double_click_opens_files);
+		ImGui::MenuItem("Show pretty name", "", &browser->config.show_pretty_name);
 		if (ImGui::MenuItem("Theme")) {
 			show_theme_options = true;
 		}

@@ -95,11 +95,7 @@ void delete_tag(const std::string& name) {
 }
 
 std::vector<std::string> get_all_groups() {
-	std::vector<std::string> names;
-	for (const auto& [name, group] : groups) {
-		names.push_back(name);
-	}
-	return names;
+	return no::get_map_keys(groups);
 }
 
 bool group_exists(const std::string& name) {
