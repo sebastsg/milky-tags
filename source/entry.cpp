@@ -29,16 +29,8 @@ std::vector<T> merge_vectors(const std::vector<T>& front, const std::vector<T>& 
 std::vector<directory_entry> directory_entry::load_from_directory(const std::filesystem::path& path) {
 	std::vector<std::filesystem::path> directories;
 	std::vector<std::filesystem::path> files;
-	const auto blacklist = { "desktop.ini", "System Volume Information", "$RECYCLE.BIN" };
 	for (const auto& path : no::entries_in_directory(path, no::entry_inclusion::everything, false)) {
-		bool is_blacklisted{ false };
-		for (const auto blacklisted : blacklist) {
-			if (path.filename().u8string() == blacklisted) {
-				is_blacklisted = true;
-				break;
-			}
-		}
-		if (is_blacklisted) {
+		if (no::platform::is_system_file(path)) {
 			continue;
 		}
 		if (path.filename().u8string().front() == '.') {
