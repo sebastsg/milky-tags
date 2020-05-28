@@ -241,7 +241,7 @@ void file_browser::directory_entry_control(directory_entry& entry) {
 	// Draw file name
 	ImGui::SetCursorScreenPos(name_cursor);
 	ImGui::PushTextWrapPos(name_cursor.x - 48.0f);
-	no::ui::text(entry.file_name());
+	no::ui::text("%s", entry.file_name().c_str());
 	ImGui::PopTextWrapPos();
 
 	ImGui::EndGroup();
@@ -274,7 +274,9 @@ void file_browser::update_entry_context_menu() {
 	for (const auto& group : tags::get_all_groups()) {
 		std::vector<no::ui::popup_item> tag_items;
 		for (const auto& tag : tags::get_all_tags_in_group(group)) {
-			tag_items.emplace_back(tag, "", false, true, [this, tag] {
+			auto tag_data = tags::find_tag(tag);
+			const auto tag_name = config.show_pretty_name ? tag_data->pretty_name : tag_data->name;
+			tag_items.emplace_back(tag_name, "", false, true, [this, tag] {
 				for (auto selected_entry : selected_entries()) {
 					selected_entry->add_tag(tag);
 				}
