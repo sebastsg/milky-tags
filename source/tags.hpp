@@ -29,6 +29,9 @@ std::optional<file_tag> find_tag(const std::string& name);
 bool replace_tag(const std::string& name, const file_tag& tag);
 std::optional<std::string> find_group_with_tag(const std::string& tag);
 
+std::string find_tag_string_in_path(const std::string& path);
+std::string filename_without_tags(const std::string& filename);
+
 }
 
 class manage_tag_ui {

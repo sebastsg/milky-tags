@@ -3,9 +3,8 @@
 #include "entry.hpp"
 #include "draw.hpp"
 #include "input.hpp"
-#include "event.hpp"
 
-class file_view {
+class file_browser {
 public:
 
 	no::vector2f top_left_position{ 335.0f, 23.0f };
@@ -19,14 +18,12 @@ public:
 		no::vector4f entry_hover_color{ 1.0f, 1.0f, 1.0f, 0.19f };
 	} config;
 
-	file_view(no::window& window, no::mouse& mouse, no::keyboard& keyboard);
-	file_view(const file_view&) = delete;
-	file_view(file_view&&) = delete;
+	file_browser(no::window& window, no::mouse& mouse, no::keyboard& keyboard);
+	file_browser(const file_browser&) = delete;
+	file_browser(file_browser&&) = delete;
 
-	~file_view();
-
-	file_view& operator=(const file_view&) = delete;
-	file_view& operator=(file_view&&) = delete;
+	file_browser& operator=(const file_browser&) = delete;
+	file_browser& operator=(file_browser&&) = delete;
 
 	void update();
 	bool is_active() const;
@@ -47,13 +44,9 @@ private:
 	no::transform2 transform;
 	std::vector<directory_entry> entries;
 	no::rectangle rectangle;
-	int blank_texture{ -1 };
 	no::window& window;
 	no::mouse& mouse;
 	no::keyboard& keyboard;
-
-	no::event_listener mouse_button_listener;
-	no::event_listener double_click_listener;
 
 	directory_entry* context_entry{ nullptr };
 	directory_entry* single_selected_entry{ nullptr };

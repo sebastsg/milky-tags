@@ -17,7 +17,7 @@ public:
 
 private:
 
-	std::unique_ptr<file_view> files;
+	std::unique_ptr<file_browser> browser;
 	std::unique_ptr<tag_system_ui> tag_ui;
 	bool show_theme_options{ false };
 

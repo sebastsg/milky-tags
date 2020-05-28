@@ -10,6 +10,7 @@ public:
 
 	static std::vector<directory_entry> load_from_directory(const std::filesystem::path& path);
 
+	std::filesystem::path path;
 	no::transform2 transform;
 	int thumbnail_texture{ -1 };
 	bool hovered{ false };
@@ -29,7 +30,6 @@ public:
 	directory_entry& operator=(directory_entry&&) = default;
 
 	void update();
-	std::filesystem::path get_path() const;
 	void load_thumbnail();
 
 	std::string tag_string() const;
@@ -46,7 +46,6 @@ private:
 
 	void rename_if_needed();
 
-	std::filesystem::path path;
 	std::string name;
 	std::vector<std::string> tags;
 	bool needs_rename{ false };

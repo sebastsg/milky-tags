@@ -5,15 +5,11 @@
 
 #include <set>
 
-file_view::file_view(no::window& window, no::mouse& mouse, no::keyboard& keyboard) : window{ window }, mouse { mouse }, keyboard{ keyboard } {
-	blank_texture = no::create_texture({ 2, 2, no::pixel_format::rgba, 0xffffffff });
+file_browser::file_browser(no::window& window, no::mouse& mouse, no::keyboard& keyboard) : window{ window }, mouse { mouse }, keyboard{ keyboard } {
+	
 }
 
-file_view::~file_view() {
-	no::delete_texture(blank_texture);
-}
-
-void file_view::update() {
+void file_browser::update() {
 	entry_full_size = entry_size + entry_margin;
 	const auto window_size = window.size().to<float>() - top_left_position;
 	new_cursor = no::platform::system_cursor::arrow;
@@ -50,7 +46,7 @@ void file_view::update() {
 
 	for (auto& entry : entries) {
 		if (entry.double_clicked) {
-			if (const auto path = entry.get_path(); std::filesystem::is_directory(path)) {
+			if (const auto path = entry.path; std::filesystem::is_directory(path)) {
 				if (config.double_click_opens_directories) {
 					load_directory(path);
 				}
@@ -105,15 +101,15 @@ void file_view::update() {
 	}
 }
 
-bool file_view::is_active() const {
+bool file_browser::is_active() const {
 	return !context_entry && !no::ui::is_hovered();
 }
 
-void file_view::clear_entries() {
+void file_browser::clear_entries() {
 	entries.clear();
 }
 
-void file_view::load_directory(const std::filesystem::path& path) {
+void file_browser::load_directory(const std::filesystem::path& path) {
 	if (std::filesystem::is_directory(path)) {
 		directory_history.push_back(path);
 		entries = directory_entry::load_from_directory(path);
@@ -123,7 +119,7 @@ void file_view::load_directory(const std::filesystem::path& path) {
 	}
 }
 
-void file_view::pop_history() {
+void file_browser::pop_history() {
 	if (directory_history.size() > 1) {
 		directory_history.pop_back();
 		load_directory(directory_history.back());
@@ -131,19 +127,19 @@ void file_view::pop_history() {
 	}
 }
 
-void file_view::clear_selection() {
+void file_browser::clear_selection() {
 	for (auto& entry : entries) {
 		entry.selected = false;
 	}
 }
 
-void file_view::select_all() {
+void file_browser::select_all() {
 	for (auto& entry : entries) {
 		entry.selected = true;
 	}
 }
 
-std::vector<directory_entry*> file_view::selected_entries() {
+std::vector<directory_entry*> file_browser::selected_entries() {
 	std::vector<directory_entry*> result;
 	for (auto& entry : entries) {
 		if (entry.selected) {
@@ -153,7 +149,7 @@ std::vector<directory_entry*> file_view::selected_entries() {
 	return result;
 }
 
-std::vector<directory_entry*> file_view::entries_between(directory_entry* from, directory_entry* to) {
+std::vector<directory_entry*> file_browser::entries_between(directory_entry* from, directory_entry* to) {
 	if (from == to) {
 		return { from };
 	}
@@ -172,7 +168,7 @@ std::vector<directory_entry*> file_view::entries_between(directory_entry* from, 
 	return result;
 }
 
-void file_view::directory_entry_control(directory_entry& entry) {
+void file_browser::directory_entry_control(directory_entry& entry) {
 	ImGui::BeginGroup();
 	const no::vector2f top_left_cursor{ ImGui::GetCursorScreenPos() };
 	auto tag_cursor = top_left_cursor + 4.0f;
@@ -253,12 +249,12 @@ void file_view::directory_entry_control(directory_entry& entry) {
 	}
 }
 
-void file_view::update_entry_context_menu() {
+void file_browser::update_entry_context_menu() {
 	if (!context_entry) {
 		return;
 	}
 	auto selection = selected_entries();
-	const auto path = context_entry->get_path();
+	const auto path = context_entry->path;
 	std::vector<no::ui::popup_item> items;
 	if (selection.size() == 1) {
 		if (std::filesystem::is_directory(path)) {

@@ -4,19 +4,6 @@
 #include "platform.hpp"
 #include "draw.hpp"
 
-std::string find_tag_string_in_path(const std::string& path) {
-	if (size_t start{ path.find('[') }; start != std::string::npos) {
-		if (size_t end{ path.find(']', start) }; end != std::string::npos) {
-			return path.substr(start + 1, end - start - 1);
-		}
-	}
-	return "";
-}
-
-std::string filename_without_tags(const std::string& filename) {
-	return no::erase_substring(filename, "[" + find_tag_string_in_path(filename) + "]");
-}
-
 template<typename T>
 std::vector<T> merge_vectors(const std::vector<T>& front, const std::vector<T>& back) {
 	std::vector<T> result;
@@ -50,13 +37,8 @@ std::vector<directory_entry> directory_entry::load_from_directory(const std::fil
 }
 
 directory_entry::directory_entry(const std::filesystem::path& path) : path{ path } {
-	auto font = no::require_font("seguiemj.ttf", 16);
-	auto tag_string = find_tag_string_in_path(path.filename().u8string());
-	for (auto& tag : no::split_string(tag_string, ' ')) {
-		tags.push_back(tag);
-	}
-	name = filename_without_tags(path.filename().u8string());
-	no::release_font("seguiemj.ttf", 16);
+	name = tags::filename_without_tags(path.filename().u8string());
+	tags = no::split_string(tags::find_tag_string_in_path(path.filename().u8string()), ' ');
 }
 
 directory_entry::~directory_entry() {
@@ -68,10 +50,6 @@ void directory_entry::update() {
 	if (visible && thumbnail_texture == -1) {
 		load_thumbnail();
 	}
-}
-
-std::filesystem::path directory_entry::get_path() const {
-	return path;
 }
 
 void directory_entry::load_thumbnail() {

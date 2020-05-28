@@ -164,6 +164,19 @@ std::optional<std::string> find_group_with_tag(const std::string& tag_name) {
 	return std::nullopt;
 }
 
+std::string find_tag_string_in_path(const std::string& path) {
+	if (size_t start{ path.find('[') }; start != std::string::npos) {
+		if (size_t end{ path.find(']', start) }; end != std::string::npos) {
+			return path.substr(start + 1, end - start - 1);
+		}
+	}
+	return "";
+}
+
+std::string filename_without_tags(const std::string& filename) {
+	return no::erase_substring(filename, "[" + find_tag_string_in_path(filename) + "]");
+}
+
 }
 
 void tag_system_ui::update(no::vector2f window_size) {
