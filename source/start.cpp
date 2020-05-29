@@ -1,13 +1,10 @@
 #include "program.hpp"
 #include "assets.hpp"
 
-#define DEV_VERSION 1
-
 void configure() {
-#if DEV_VERSION
+#if _DEBUG
 	no::set_asset_directory("../..");
 #endif
-	no::register_font("seguiemj.ttf", 16);
 }
 
 void start() {

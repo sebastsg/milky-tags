@@ -19,8 +19,6 @@ This project uses [CMake](https://cmake.org). Run `project/vs16.bat` to generate
 
 It's also required that you clone and build [nfwk](https://github.com/sebastsg/nfwk) in the same parent directory.
 
-If you are building a release, make sure ``DEV_VERSION`` in ``start.cpp`` is defined to ``0``. I'll fix that quirk eventually.
-
 # The milky.tags file
 This file contains the groups and tags that are recognized.
 Currently, it only lets you define your own tags, but I'll add some "import tags" feature later.
