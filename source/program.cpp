@@ -12,7 +12,6 @@ main_state::main_state() {
 	window().set_swap_interval(no::swap_interval::immediate);
 	tag_ui = std::make_unique<tag_system_ui>();
 	browser = std::make_unique<file_browser>(window(), mouse(), keyboard());
-	browser->load_directory("E:/"); // todo: don't hardcode the starting directory lol
 }
 
 main_state::~main_state() {

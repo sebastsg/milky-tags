@@ -6,13 +6,62 @@
 #include <set>
 
 file_browser::file_browser(no::window& window, no::mouse& mouse, no::keyboard& keyboard) : window{ window }, mouse { mouse }, keyboard{ keyboard } {
-	
+	root_directories = no::platform::get_root_directories(); // todo: update this every now and then
+	load_directory(config.default_open_path);
 }
 
 void file_browser::update() {
-	entry_full_size = entry_size + entry_margin;
-	const auto window_size = window.size().to<float>() - top_left_position;
 	new_cursor = no::platform::system_cursor::arrow;
+	if (entries.size() > 0) {
+		update_entries();
+	} else {
+		update_start();
+	}
+	if (old_cursor != new_cursor) {
+		no::platform::set_system_cursor(new_cursor);
+		old_cursor = new_cursor;
+	}
+}
+
+void file_browser::update_start() {
+	const auto window_size = window.size().to<float>() - top_left_position;
+	no::ui::push_static_window("##start", top_left_position, window_size);
+	no::ui::new_line();
+
+	no::ui::text("Input the directory you wish to open by default.");
+	no::ui::input("##config-default-path", config.default_open_path);
+	bool valid{ std::filesystem::is_directory(config.default_open_path) };
+	if (!valid) {
+		no::ui::begin_disabled();
+	}
+	if (no::ui::button("Save")) {
+		load_directory(config.default_open_path);
+	}
+	if (!valid) {
+		no::ui::end_disabled();
+		no::ui::inline_next();
+		no::ui::colored_text({ 1.0f, 0.2f, 0.2f }, "Not a valid directory.");
+	}
+	no::ui::separate();
+
+	no::ui::text("You can also select from these:");
+	for (const auto& path : root_directories) {
+		if (no::ui::button(path.u8string(), 64.0f)) {
+			config.default_open_path = path.u8string();
+			load_directory(config.default_open_path);
+		}
+		if (ImGui::IsItemHovered()) {
+			new_cursor = no::platform::system_cursor::hand;
+		}
+		no::ui::inline_next();
+	}
+
+	no::ui::pop_window();
+}
+
+void file_browser::update_entries() {
+	const auto window_size = window.size().to<float>() - top_left_position;
+	entry_full_size = entry_size + entry_margin;
 	no::ui::push_static_window("##files", top_left_position, window_size);
 	ImGui::SameLine();
 	ImGui::BeginGroup();
@@ -93,11 +142,6 @@ void file_browser::update() {
 	for (auto& entry : entries) {
 		entry.update();
 		entry.visible = false;
-	}
-
-	if (old_cursor != new_cursor) {
-		no::platform::set_system_cursor(new_cursor);
-		old_cursor = new_cursor;
 	}
 }
 

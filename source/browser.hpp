@@ -13,6 +13,7 @@ public:
 	no::vector2f entry_full_size{ entry_size + entry_margin };
 
 	struct {
+		std::string default_open_path;
 		bool double_click_opens_directories{ true };
 		bool double_click_opens_files{ true };
 		bool show_pretty_name{ true };
@@ -39,6 +40,9 @@ public:
 
 private:
 
+	void update_start();
+	void update_entries();
+
 	void directory_entry_control(directory_entry& entry);
 	void update_entry_context_menu();
 
@@ -56,5 +60,7 @@ private:
 	no::platform::system_cursor new_cursor{ no::platform::system_cursor::arrow };
 
 	std::vector<std::filesystem::path> directory_history;
+
+	std::vector<std::filesystem::path> root_directories;
 
 };
