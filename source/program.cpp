@@ -12,6 +12,9 @@ main_state::main_state() {
 	window().set_swap_interval(no::swap_interval::immediate);
 	tag_ui = std::make_unique<tag_system_ui>();
 	browser = std::make_unique<file_browser>(window(), mouse(), keyboard());
+#if PLATFORM_WINDOWS
+	window().set_icon_from_resource(102);
+#endif
 }
 
 main_state::~main_state() {
