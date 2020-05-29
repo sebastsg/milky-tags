@@ -3,6 +3,7 @@ milky.tags
 
 # projects
 project/vs
+project/milky-tags.aps
 
 # debug program database
 *.pdb
