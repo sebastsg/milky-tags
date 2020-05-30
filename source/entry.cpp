@@ -52,14 +52,18 @@ directory_entry::~directory_entry() {
 
 void directory_entry::update() {
 	rename_if_needed();
-	if (visible && thumbnail_texture == -1) {
+	if (visible) {
 		load_thumbnail();
 	}
 }
 
 void directory_entry::load_thumbnail() {
-	auto surface = no::platform::load_file_thumbnail(path, 256);
-	thumbnail_texture = no::create_texture(surface, no::scale_option::linear, false);
+	if (thumbnail_texture == -1 && !future_thumbnail.valid()) {
+		future_thumbnail = std::async(std::launch::async, no::platform::load_file_thumbnail, path, 256);
+	}
+	if (no::is_future_ready(future_thumbnail)) {
+		thumbnail_texture = no::create_texture(future_thumbnail.get(), no::scale_option::linear, false);
+	}
 }
 
 std::string directory_entry::tag_string() const {

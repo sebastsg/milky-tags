@@ -2,8 +2,10 @@
 
 #include "transform.hpp"
 #include "tags.hpp"
+#include "surface.hpp"
 
 #include <filesystem>
+#include <future>
 
 class directory_entry {
 public:
@@ -51,5 +53,7 @@ private:
 	std::vector<std::string> tags;
 	bool needs_rename{ false };
 	bool rename_failed{ false };
+
+	std::future<no::surface> future_thumbnail;
 
 };
