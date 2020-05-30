@@ -175,9 +175,8 @@ std::string filename_without_tags(const std::string& filename) {
 
 }
 
-void tag_system_ui::update(no::vector2f window_size) {
+void tag_system_ui::update() {
 	ImGui::PushID("tag-system");
-	no::ui::push_static_window("Tags", { 0.0f, 23.0f }, { 336.0f, window_size.y - 23.0f });
 	ImGui::PushItemWidth(144.0f);
 	groups_ui.update();
 	no::ui::separate();
@@ -203,7 +202,6 @@ void tag_system_ui::update(no::vector2f window_size) {
 		ImGui::PopID();
 	}
 	manage_ui.update();
-	no::ui::pop_window();
 	ImGui::PopID();
 }
 

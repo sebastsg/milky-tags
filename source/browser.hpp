@@ -31,6 +31,7 @@ public:
 	bool is_active() const;
 	void clear_entries();
 	void load_directory(const std::filesystem::path& path);
+	void load_paths(const std::vector<std::filesystem::path>& paths);
 	void pop_history();
 	void clear_selection();
 	void select_all();

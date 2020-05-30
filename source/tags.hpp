@@ -65,7 +65,7 @@ private:
 class tag_system_ui {
 public:
 
-	void update(no::vector2f window_size);
+	void update();
 
 private:
 

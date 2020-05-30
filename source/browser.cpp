@@ -61,6 +61,9 @@ void file_browser::update_start() {
 
 void file_browser::update_entries() {
 	const auto window_size = window.size().to<float>() - top_left_position;
+	if (window_size.x < 0.0f || window_size.y < 0.0f) {
+		return;
+	}
 	entry_full_size = entry_size + entry_margin;
 	no::ui::push_static_window("##files", top_left_position, window_size);
 	ImGui::SameLine();
@@ -160,6 +163,13 @@ void file_browser::load_directory(const std::filesystem::path& path) {
 	} else {
 		WARNING("Invalid directory: " << path);
 		clear_entries();
+	}
+}
+
+void file_browser::load_paths(const std::vector<std::filesystem::path>& paths) {
+	clear_entries();
+	for (const auto& path : paths) {
+		entries.emplace_back(path, true);
 	}
 }
 
@@ -311,7 +321,9 @@ void file_browser::update_entry_context_menu() {
 				no::platform::open_file(path, false);
 			});
 		}
-		items.emplace_back("Show in file explorer", "", false, false);
+		items.emplace_back("Show in file explorer", "", false, true, [path] {
+			no::platform::open_file_browser_and_select(path);
+		});
 		items.emplace_back("Rename", "", false, false);
 	}
 	std::vector<no::ui::popup_item> tag_group_items;

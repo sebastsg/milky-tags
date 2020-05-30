@@ -59,8 +59,14 @@ void main_state::update() {
 		browser->pop_history();
 	}
 	ImGui::EndMainMenuBar();
+	
 	browser->update();
-	tag_ui->update(window().size().to<float>());
+	
+	no::ui::push_static_window("##side", { 0.0f, 23.0f }, { 336.0f, static_cast<float>(window().size().y) - 23.0f });
+	tag_ui->update();
+	search.update(*browser);
+	no::ui::pop_window();
+
 	if (show_theme_options) {
 		no::vector2f theme_size{ 640.0f, 512.0f };
 		no::ui::push_window("Theme options", window().size().to<float>() / 2.0f - theme_size / 2.0f, theme_size);
