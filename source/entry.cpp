@@ -31,17 +31,19 @@ std::vector<directory_entry> directory_entry::load_from_directory(const std::fil
 	}
 	std::vector<directory_entry> entries;
 	for (const auto& path : merge_vectors(directories, files)) {
-		entries.emplace_back(path, true);
+		entries.emplace_back(path);
 	}
 	return entries;
 }
 
-directory_entry::directory_entry(const std::filesystem::path& path, bool sort_tags) : path{ path } {
+std::vector<std::string> directory_entry::parse_tags(const std::filesystem::path& path) {
+	return no::split_string(tags::find_tag_string_in_path(path.filename().u8string()), ' ');
+}
+
+directory_entry::directory_entry(const std::filesystem::path& path) : path{ path } {
 	name = tags::filename_without_tags(path.filename().u8string());
-	tags = no::split_string(tags::find_tag_string_in_path(path.filename().u8string()), ' ');
-	if (sort_tags) {
-		std::sort(tags.begin(), tags.end());
-	}
+	tags = parse_tags(path);
+	std::sort(tags.begin(), tags.end());
 }
 
 directory_entry::~directory_entry() {

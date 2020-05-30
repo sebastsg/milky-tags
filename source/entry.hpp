@@ -9,6 +9,7 @@ class directory_entry {
 public:
 
 	static std::vector<directory_entry> load_from_directory(const std::filesystem::path& path);
+	static std::vector<std::string> parse_tags(const std::filesystem::path& path);
 
 	std::filesystem::path path;
 	no::transform2 transform;
@@ -20,7 +21,7 @@ public:
 	bool right_clicked{ false };
 	bool visible{ false };
 
-	directory_entry(const std::filesystem::path& path, bool sort_tags);
+	directory_entry(const std::filesystem::path& path);
 	directory_entry(const directory_entry&) = delete;
 	directory_entry(directory_entry&&) = default;
 

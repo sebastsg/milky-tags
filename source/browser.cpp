@@ -169,7 +169,7 @@ void file_browser::load_directory(const std::filesystem::path& path) {
 void file_browser::load_paths(const std::vector<std::filesystem::path>& paths) {
 	clear_entries();
 	for (const auto& path : paths) {
-		entries.emplace_back(path, true);
+		entries.emplace_back(path);
 	}
 }
 

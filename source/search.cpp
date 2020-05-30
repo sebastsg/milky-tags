@@ -3,6 +3,34 @@
 #include "browser.hpp"
 #include "ui.hpp"
 
+std::vector<std::filesystem::path> all_paths_except_system(std::filesystem::path root) {
+	no::timer timer;
+	timer.start();
+	auto paths = std::move(no::entries_in_directory(root, no::entry_inclusion::everything, true));
+	std::vector<std::filesystem::path> system_directories;
+	for (int i{ 0 }; i < static_cast<int>(paths.size()); i++) {
+		if (no::platform::is_system_file(paths[i])) {
+			if (std::filesystem::is_directory(paths[i])) {
+				system_directories.push_back(paths[i]);
+			}
+			std::swap(paths[i], paths.back());
+			paths.pop_back();
+			i--;
+		}
+	}
+	for (const auto& system_directory : system_directories) {
+		for (int i{ 0 }; i < static_cast<int>(paths.size()); i++) {
+			if (paths[i].parent_path() == system_directory) {
+				std::swap(paths[i], paths.back());
+				paths.pop_back();
+				i--;
+			}
+		}
+	}
+	INFO("Loaded paths in " << timer.seconds() << " seconds.");
+	return paths;
+}
+
 void search_ui::select_tag_popup(std::string_view popup_id, bool include) {
 	if (!ImGui::IsPopupOpen(popup_id.data())) {
 		return;
@@ -77,30 +105,43 @@ void search_ui::update_browser(file_browser& browser) {
 	}
 	must_update_browser = false;
 	std::vector<std::filesystem::path> paths;
-	for (const auto& cache : cache_list.caches) {
+	no::timer filter_timer;
+	filter_timer.start();
+	for (auto& cache : cache_list.caches) {
 		for (const auto& path : cache.paths()) {
-			directory_entry entry{ path, false }; // todo: make function to specifically check the tags
-			auto tag_predicate = std::bind(&directory_entry::has_tag, &entry, std::placeholders::_1);
-			if (!std::all_of(include_tags.begin(), include_tags.end(), tag_predicate)) {
-				continue;
+			auto tags = directory_entry::parse_tags(path);
+			auto tag_predicate = [tags] (const auto& tag) {
+				return std::find(tags.begin(), tags.end(), tag) != tags.end();
+			};
+			if (std::all_of(include_tags.begin(), include_tags.end(), tag_predicate)) {
+				if (!std::any_of(exclude_tags.begin(), exclude_tags.end(), tag_predicate)) {
+					paths.emplace_back(path);
+				}
 			}
-			if (std::any_of(exclude_tags.begin(), exclude_tags.end(), tag_predicate)) {
-				continue;
-			}
-			paths.emplace_back(path);
 		}
 	}
+	INFO("Filtered in " << filter_timer.milliseconds() << " ms");
 	browser.load_paths(paths);
 }
 
-search_path_cache_list::search_path_cache_list() {
-	// todo: load stored cache
+search_path_cache::search_path_cache(const std::filesystem::path& path) : search_path{ path } {
+	future_paths = std::async(std::launch::async, all_paths_except_system, path);
 }
 
-void search_path_cache_list::rebuild() {
-	for (auto& cache : caches) {
-		cache.rebuild();
+search_path_cache::search_path_cache(search_path_cache&& that) noexcept : search_path{ that.search_path } {
+	std::swap(cached_paths, that.cached_paths);
+	std::swap(future_paths, that.future_paths);
+}
+
+const std::filesystem::path& search_path_cache::directory() const {
+	return search_path;
+}
+
+const std::vector<std::filesystem::path>& search_path_cache::paths() {
+	if (no::is_future_ready(future_paths)) {
+		cached_paths = future_paths.get();
 	}
+	return cached_paths;
 }
 
 void search_path_cache_list::add_search_directory(const std::filesystem::path& directory) {
@@ -118,40 +159,4 @@ std::vector<std::filesystem::path> search_path_cache_list::directories() const {
 		paths.push_back(cache.directory());
 	}
 	return paths;
-}
-
-search_path_cache::search_path_cache(const std::filesystem::path& path) : search_path{ path } {
-	rebuild();
-}
-
-void search_path_cache::rebuild() {
-	cached_paths = std::move(no::entries_in_directory(search_path, no::entry_inclusion::everything, true));
-	std::vector<std::filesystem::path> system_directories;
-	for (int i{ 0 }; i < static_cast<int>(cached_paths.size()); i++) {
-		if (no::platform::is_system_file(cached_paths[i])) {
-			if (std::filesystem::is_directory(cached_paths[i])) {
-				system_directories.push_back(cached_paths[i]);
-			}
-			std::swap(cached_paths[i], cached_paths.back());
-			cached_paths.pop_back();
-			i--;
-		}
-	}
-	for (const auto& system_directory : system_directories) {
-		for (int i{ 0 }; i < static_cast<int>(cached_paths.size()); i++) {
-			if (cached_paths[i].parent_path() == system_directory) {
-				std::swap(cached_paths[i], cached_paths.back());
-				cached_paths.pop_back();
-				i--;
-			}
-		}
-	}
-}
-
-const std::filesystem::path& search_path_cache::directory() const {
-	return search_path;
-}
-
-const std::vector<std::filesystem::path>& search_path_cache::paths() const {
-	return cached_paths;
 }
