@@ -176,6 +176,9 @@ std::string filename_without_tags(const std::string& filename) {
 }
 
 void tag_system_ui::update() {
+	if (!ImGui::CollapsingHeader("Tags##tag-manage")) {
+		return;
+	}
 	ImGui::PushID("tag-system");
 	ImGui::PushItemWidth(144.0f);
 	groups_ui.update();
@@ -230,7 +233,6 @@ void manage_tag_ui::update() {
 	if (!tag.has_value()) {
 		return;
 	}
-	no::ui::separate();
 	ImGui::PushID("manage-tag");
 	no::ui::input("Name", tag->name);
 	no::ui::input("Pretty name", tag->pretty_name);
@@ -259,6 +261,9 @@ void manage_tag_ui::update() {
 }
 
 void manage_tag_groups_ui::update() {
+	if (!ImGui::CollapsingHeader("Groups##group-header")) {
+		return;
+	}
 	ImGui::PushID("manage-groups");
 	const bool any_group_is_being_renamed{ !new_group_name.empty() };
 	if (any_group_is_being_renamed) {

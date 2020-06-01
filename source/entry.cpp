@@ -4,6 +4,21 @@
 #include "platform.hpp"
 #include "draw.hpp"
 
+void thumbnail_loader::load(std::filesystem::path path, int scale, int& destination) {
+	requests.push_back({ std::ref(destination), std::async(std::launch::async, no::platform::load_file_thumbnail, path, 256) });
+}
+
+void thumbnail_loader::update() {
+	for (int i{ 0 }; i < static_cast<int>(requests.size()); i++) {
+		auto& request = requests[i];
+		if (no::is_future_ready(request.future)) {
+			request.destination.get() = no::create_texture(request.future.get(), no::scale_option::linear, false);
+			requests.erase(requests.begin() + i);
+			i--;
+		}
+	}
+}
+
 template<typename T>
 std::vector<T> merge_vectors(const std::vector<T>& front, const std::vector<T>& back) {
 	std::vector<T> result;
@@ -52,18 +67,6 @@ directory_entry::~directory_entry() {
 
 void directory_entry::update() {
 	rename_if_needed();
-	if (visible) {
-		load_thumbnail();
-	}
-}
-
-void directory_entry::load_thumbnail() {
-	if (thumbnail_texture == -1 && !future_thumbnail.valid()) {
-		future_thumbnail = std::async(std::launch::async, no::platform::load_file_thumbnail, path, 256);
-	}
-	if (no::is_future_ready(future_thumbnail)) {
-		thumbnail_texture = no::create_texture(future_thumbnail.get(), no::scale_option::linear, false);
-	}
 }
 
 std::string directory_entry::tag_string() const {

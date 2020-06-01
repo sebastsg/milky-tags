@@ -7,6 +7,21 @@
 #include <filesystem>
 #include <future>
 
+class thumbnail_loader {
+public:
+
+	struct thumbnail_request {
+		std::reference_wrapper<int> destination;
+		std::future<no::surface> future;
+	};
+
+	std::vector<thumbnail_request> requests;
+
+	void load(std::filesystem::path path, int scale, int& destination);
+	void update();
+
+};
+
 class directory_entry {
 public:
 
@@ -22,6 +37,7 @@ public:
 	bool left_clicked{ false };
 	bool right_clicked{ false };
 	bool visible{ false };
+	bool has_requested_thumbnail{ false };
 
 	directory_entry(const std::filesystem::path& path);
 	directory_entry(const directory_entry&) = delete;
@@ -33,7 +49,6 @@ public:
 	directory_entry& operator=(directory_entry&&) = default;
 
 	void update();
-	void load_thumbnail();
 
 	std::string tag_string() const;
 	std::string file_name() const;
@@ -53,7 +68,5 @@ private:
 	std::vector<std::string> tags;
 	bool needs_rename{ false };
 	bool rename_failed{ false };
-
-	std::future<no::surface> future_thumbnail;
 
 };

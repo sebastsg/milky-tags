@@ -3,34 +3,6 @@
 #include "browser.hpp"
 #include "ui.hpp"
 
-std::vector<std::filesystem::path> all_paths_except_system(std::filesystem::path root) {
-	no::timer timer;
-	timer.start();
-	auto paths = std::move(no::entries_in_directory(root, no::entry_inclusion::everything, true));
-	std::vector<std::filesystem::path> system_directories;
-	for (int i{ 0 }; i < static_cast<int>(paths.size()); i++) {
-		if (no::platform::is_system_file(paths[i])) {
-			if (std::filesystem::is_directory(paths[i])) {
-				system_directories.push_back(paths[i]);
-			}
-			std::swap(paths[i], paths.back());
-			paths.pop_back();
-			i--;
-		}
-	}
-	for (const auto& system_directory : system_directories) {
-		for (int i{ 0 }; i < static_cast<int>(paths.size()); i++) {
-			if (paths[i].parent_path() == system_directory) {
-				std::swap(paths[i], paths.back());
-				paths.pop_back();
-				i--;
-			}
-		}
-	}
-	INFO("Loaded paths in " << timer.seconds() << " seconds.");
-	return paths;
-}
-
 void search_ui::select_tag_popup(std::string_view popup_id, bool include) {
 	if (!ImGui::IsPopupOpen(popup_id.data())) {
 		return;
@@ -61,8 +33,10 @@ void search_ui::update(file_browser& browser) {
 		}
 		return;
 	}
+	if (!ImGui::CollapsingHeader("Search##search-ui")) {
+		return;
+	}
 	ImGui::PushID("search");
-	no::ui::separate();
 	no::ui::text("Include tags:");
 	no::ui::inline_next();
 	for (int i{ 0 }; i < static_cast<int>(include_tags.size()); i++) {
@@ -125,7 +99,8 @@ void search_ui::update_browser(file_browser& browser) {
 }
 
 search_path_cache::search_path_cache(const std::filesystem::path& path) : search_path{ path } {
-	future_paths = std::async(std::launch::async, all_paths_except_system, path);
+	// might take a few seconds.
+	future_paths = std::async(std::launch::async, no::entries_in_directory, path, no::entry_inclusion::everything, true);
 }
 
 search_path_cache::search_path_cache(search_path_cache&& that) noexcept : search_path{ that.search_path } {

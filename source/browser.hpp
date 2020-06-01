@@ -7,6 +7,8 @@
 class file_browser {
 public:
 
+	thumbnail_loader loader;
+
 	no::vector2f top_left_position{ 335.0f, 23.0f };
 	no::vector2f entry_size{ 288.0f, 288.0f };
 	no::vector2f entry_margin{ 12.0f, 12.0f };
@@ -35,6 +37,10 @@ public:
 	void pop_history();
 	void clear_selection();
 	void select_all();
+
+	std::filesystem::path active_directory() const {
+		return directory_history.empty() ? config.default_open_path : directory_history.back();
+	}
 
 	std::vector<directory_entry*> selected_entries();
 	std::vector<directory_entry*> entries_between(directory_entry* from, directory_entry* to);

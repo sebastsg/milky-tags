@@ -58,6 +58,33 @@ void main_state::update() {
 	if (no::ui::button("←")) {
 		browser->pop_history();
 	}
+	auto active_dir = browser->active_directory();
+	active_dir.make_preferred();
+	auto path_parts = no::split_string(active_dir.u8string(), std::filesystem::path::preferred_separator);
+	std::filesystem::path current_path_here;
+	for (const auto& path_part : path_parts) {
+		current_path_here /= path_part;
+		current_path_here.make_preferred();
+		if (path_part.empty()) {
+			no::ui::text("/");
+			no::ui::inline_next();
+			continue; // for f.ex C://
+		}
+		std::error_code error_code{};
+		if (std::filesystem::equivalent(current_path_here, active_dir, error_code)) {
+			if (error_code.value() != 0) {
+				WARNING("File system error: " << error_code.message());
+			}
+			no::ui::text(path_part);
+		} else if (error_code.value() == 0 && no::ui::button(path_part)) {
+			browser->load_directory(current_path_here);
+		}
+		no::ui::inline_next();
+		no::ui::text("/");
+		no::ui::inline_next();
+	}
+	no::ui::new_line();
+
 	ImGui::EndMainMenuBar();
 	
 	browser->update();
@@ -65,6 +92,7 @@ void main_state::update() {
 	no::ui::push_static_window("##side", { 0.0f, 23.0f }, { 336.0f, static_cast<float>(window().size().y) - 23.0f });
 	tag_ui->update();
 	search.update(*browser);
+	no::ui::text("%i thumbnail requests", static_cast<int>(browser->loader.requests.size()));
 	no::ui::pop_window();
 
 	if (show_theme_options) {

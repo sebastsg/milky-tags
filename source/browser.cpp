@@ -14,6 +14,7 @@ void file_browser::update() {
 	new_cursor = no::platform::system_cursor::arrow;
 	if (entries.size() > 0) {
 		update_entries();
+		loader.update();
 	} else {
 		update_start();
 	}
@@ -65,12 +66,11 @@ void file_browser::update_entries() {
 		return;
 	}
 	entry_full_size = entry_size + entry_margin;
+
 	no::ui::push_static_window("##files", top_left_position, window_size);
-	ImGui::SameLine();
 	ImGui::BeginGroup();
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
-
 	const int column_count{ static_cast<int>(window_size.x / entry_full_size.x) };
 	const int entry_count{ static_cast<int>(entries.size()) };
 	const int last_column_count{ entry_count % column_count };
@@ -91,7 +91,6 @@ void file_browser::update_entries() {
 			}
 		}
 	}
-
 	ImGui::PopStyleVar(2);
 	ImGui::EndGroup();
 	no::ui::pop_window();
@@ -144,6 +143,10 @@ void file_browser::update_entries() {
 
 	for (auto& entry : entries) {
 		entry.update();
+		if (entry.visible && !entry.has_requested_thumbnail) {
+			loader.load(entry.path, 256, entry.thumbnail_texture);
+			entry.has_requested_thumbnail = true;
+		}
 		entry.visible = false;
 	}
 }
@@ -349,7 +352,9 @@ void file_browser::update_entry_context_menu() {
 	}
 	std::vector<no::ui::popup_item> tags_to_remove;
 	for (const auto& tag : unique_tags) {
-		tags_to_remove.emplace_back(tag, "", false, true, [this, tag] {
+		auto tag_data = tags::find_tag(tag);
+		const auto tag_name = config.show_pretty_name ? tag_data->pretty_name : tag_data->name;
+		tags_to_remove.emplace_back(tag_name, "", false, true, [this, tag] {
 			for (auto selected_entry : selected_entries()) {
 				selected_entry->remove_tag(tag);
 			}
